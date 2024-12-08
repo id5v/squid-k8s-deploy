@@ -1,87 +1,48 @@
-# squid-k8s-deploy
 
+# Squid Proxy Deployment Project
 
-Installing and Configuring Squid for Proxy Testing
-Squid is a powerful tool that can be used to test proxy configurations across various libraries. This guide provides step-by-step instructions to set up and configure Squid in a Kubernetes environment. Squid logs can be accessed for review using:
+This project contains two separate implementations for deploying a **Squid Proxy server**, designed to test and manage HTTP transport connections. The repository is organized into two directories: `docker` for the Docker-based setup and `kube` for the Kubernetes-based setup.
 
-```bash
-cat /var/log/squid/access.log
-```
+The Squid Proxy acts as an intermediary to route and analyze HTTP traffic, making it suitable for testing, debugging, or optimizing HTTP connections.
 
-## Steps to Install Squid in Kubernetes
+## Docker Setup
 
-1. Deploy Squid using a Kubernetes Deployment
-First, deploy Squid using a Kubernetes Deployment, which will create pods running Squid instances.
+The Docker implementation is located in the `docker` directory. This approach provides a straightforward way to build and run the Squid Proxy server in a containerized environment. Follow these steps to set up Squid Proxy using Docker:
 
-## Deployment
+1. Navigate to the `docker` directory and build the Docker image:
+   ```bash
+   docker build -t squid-proxy .
+   ```
+2. Run the container, mapping port `3128` for external access:
+   ```bash
+   docker run -d -p 3128:3128 squid-proxy
+   ```
 
-Apply the Deployment manifest:
-```bash
-kubectl apply -f squid-deployment.yaml
-```
-This command creates a Deployment resource that ensures the Squid pods are running. Verify that the Deployment was created successfully:
+Once the container is running, you can connect to the proxy server on `localhost:3128` to test HTTP transport behavior.
 
-```bash
-kubectl get deployments
-```
+---
 
-2. Configure a Service for Squid Access
-To allow access to Squid from other pods or external systems, create a Kubernetes 
+## Kubernetes Setup
 
+The Kubernetes implementation is located in the `kube` directory. This setup leverages **Helm charts** for easy deployment and scaling in Kubernetes clusters. Follow these steps to deploy the Squid Proxy server in a Kubernetes environment:
 
-## Service.
+1. Navigate to the `kube` directory and install the Helm chart:
+   ```bash
+   helm install --name squid .
+   ```
+2. Forward the Squid Proxy service to your local machine on port `3128`:
+   ```bash
+   kubectl port-forward -n default service/squid 3128:3128
+   ```
 
-Apply the Service manifest:
+Once the service is forwarded, you can connect to the proxy at `localhost:3128` to test HTTP transport scenarios.
 
-```bash
-kubectl apply -f squid-service.yaml
-```
+---
 
-The Service enables other components to connect to Squid using a dedicated IP address or DNS name. Verify the Service is running:
+## Use Cases
 
-```bash
-kubectl get services
-```
+- **Testing HTTP Transport**: Squid Proxy enables detailed inspection and management of HTTP connections.
+- **Development and Debugging**: Use the proxy to simulate and debug various HTTP scenarios in a controlled environment.
+- **Performance Tuning**: Analyze and optimize HTTP traffic to improve performance and reliability.
 
-## ConfigMap
-
-3. Configure Squid with a ConfigMap
-Use a ConfigMap to define Squid's configuration rules and parameters.
-
-Apply the ConfigMap manifest:
-
-```bash
-kubectl apply -f squid-config.yaml
-```
-The ConfigMap stores Squid settings such as allowed IP addresses, ports, and proxying rules. Confirm the ConfigMap has been applied:
-
-```bash
-kubectl get configmap
-```
-
-## Secrets
-
-4. Set Up Secrets for Squid
-If Squid requires sensitive data like authentication credentials, configure Secrets. Create a Secret manifest or use the kubectl create secret command to store this information securely.
-
-```bash
-kubectl apply -f squid-secrets.yaml
-```
-
-Verify the Secrets are applied:
-
-```bash
-kubectl get secrets
-```
-
-5. Verify the Deployment
-Ensure that the Squid pods are running and functioning correctly:
-
-```bash
-kubectl get pods
-```
-Look for pods with names starting with squid and ensure their status is Running. You can also check the logs for additional debugging:
-
-```bash
-kubectl logs -l app=squid
-```
+Choose the implementation (`docker` or `kube`) based on your testing environment and scalability requirements. Both setups ensure a functional Squid Proxy server accessible via port `3128`.
