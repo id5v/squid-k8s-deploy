@@ -1,0 +1,32 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: squid-config
+data:
+  squid.conf: |
+    # Настройки портов
+    http_port 3128cd .
+
+    # Разрешённые сети (добавьте диапазоны IP для кластера и клиентов)
+    acl localnet src 10.0.0.0/8
+    acl localnet src 192.168.0.0/16
+    acl localnet src 172.16.0.0/12
+    acl localnet src 172.17.0.0/16 # Kubernetes и Docker IP
+
+    # Разрешённые порты
+    acl SSL_ports port 443
+    acl Safe_ports port 80
+    acl Safe_ports port 443
+
+    # Политика доступа
+    http_access allow all
+
+    # Настройки кеша
+    cache_mem 2048 MB
+    maximum_object_size 512 MB
+    cache_dir ufs /var/cache/squid 70000 16 256
+    access_log stdio:/var/log/squid/access.log
+    cache_log /var/log/squid/cache.log
+
+    # Отладка
+    debug_options ALL,
